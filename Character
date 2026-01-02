@@ -1,0 +1,141 @@
+import java.util.ArrayList;
+import java.util.Random;
+
+public class character {
+	private String playerName;
+	private String race;
+	private int attack;
+	private int health;
+	
+	Random rng = new Random();
+	
+	public character(String name, String species) {
+		
+		playerName = name;//sets player name of object
+			
+		
+		//Determines which race the player chose and assigns the preset health, attack, and race variable values
+		if ((species.equals("b")) || (species.equals("B"))) {
+			race = "balrog";
+			health = 82;
+			attack = 15;
+			
+		}
+		else if ((species.equals("c")) || (species.equals("C"))) {
+			race = "cyberdemon";
+			health = 61;
+			attack = 13;
+			
+		}
+		else if ((species.equals("e")) || (species.equals("E"))) {
+			race = "elf";
+			health = 43;
+			attack = 11;
+		}
+		else if ((species.equals("h")) || (species.equals("H"))) {
+			race = "human";
+			health = 109;
+			attack = 11;
+		}
+		else {
+			System.err.println("this is not a character type");
+			
+		}
+		
+		
+	}
+	
+	public String getName() {
+		
+		return playerName;
+	}
+	
+	public String getSpecies() {
+		return race;
+	}
+	
+	public int getHealth() {
+		return health;
+	}
+	
+	public int getAttack() {
+		return attack;
+	}
+	
+	public boolean isNamed(String aName)//checks if playerName equals the name entered by the user(used for attacking players)
+	{
+		
+		return playerName.equals(aName);
+	}
+	
+	//checks if character is dead
+	public boolean isDead() {
+		boolean dead;
+			if (health <=0) {
+				dead = true;
+			}
+			else {
+				dead = false;
+			}
+		return dead;
+	}
+	
+	public int getDamage() {
+		int damage;
+		int balrogAttack2;
+		int ultAttack;
+		int balrogUlt2;
+		
+		//all damage rolls need a +1 to include the top number of its max attack since random.nextInt goes from 0 to right before the number given
+		damage = rng.nextInt(attack + 1);
+		balrogAttack2 = rng.nextInt(attack + 1);
+		
+		//rng roll to see if user get to use the special abilities of their character
+		ultAttack = rng.nextInt(101);
+		
+		//since balrogs attacks twice, they get 2 chances to activate their ability
+		balrogUlt2 = rng.nextInt(101);
+		
+		
+		
+		if (race.equals("balrog")){//calculates damage dealt if player is a balrog
+			
+			damage = damage + balrogAttack2;
+			
+			if (ultAttack <= 5) {//checks if special attacks activated
+				damage = damage + 50;
+				System.out.println("special attack! +50 damage");
+			}
+			if (ultAttack <= 5) {
+				damage = damage + 50;
+				System.out.println("special attack! +50 damage");
+			}
+		}
+		
+		else if (race.equals("cyberdemon")) {//calculates damage dealt if cyberdemon
+			if (ultAttack <= 5) {
+				damage = damage + 50;
+				System.out.println("special attack! +50 damage");
+			}
+		}
+		
+		else if (race.equals("elf")) {//calculates damage if elf
+			if (ultAttack <= 10) {
+				damage = damage * 2;
+				System.out.println("special attack! 2x damage");
+			}
+		}
+		
+		System.out.println("you dealt " + damage + "damage");//shows how much damage you dealt to reduce confusion
+		return damage;
+	}
+	
+	
+	public void damage(int damage) {//subtracts the damage calculated in getDamage from health
+		
+		health = health - damage;
+	}
+	
+}	
+	
+	
