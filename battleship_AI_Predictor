@@ -1,0 +1,127 @@
+import java.util.Scanner;
+
+public class BattleshipAi {
+
+  //calls a custom Node object class that is stored in the nodeClass.java file to 
+  //keep program compact and readable
+	public static LinkedList llist = new LinkedList();
+	public static void build_grid() {
+
+    //creates a 10x10 grid of interconnected nodes that track their own x and y pos, and other data
+		llist.build_origin();
+		llist.build_grid();
+		
+		
+		
+	}
+	
+	private static final Scanner cin = new Scanner(System.in);
+	
+	
+	public static void calculate_next_shot() {
+
+    //shot_chance is calculated by trying to place every ship recorded as still alive in the current node moving right and down
+    //note: left and up are not checked because those positions would have already been checked since the program checks each node 
+    //through recursion moving from the top left node
+    
+    // if the ship intersects with a wall, miss, or sunken ship the check is deemed not valid.
+    // if position is valid, all nodes covered by that ship position gain 1 to shot_chance
+		llist.calculate_shot(carrier_dead, battleship_dead, cruiser_dead, sub_dead, destroyer_dead);
+		System.out.println();
+
+    //displays all nodes in 10x10 grid with their shot_chance displayed
+    llist.display_grid();
+
+    //searches all nodes to find higest shot_chance and returns x and y position
+		llist.find_higest();
+		
+		
+	}
+
+  // basic menue to control program by user  
+	public static boolean actions() {
+		System.out.println("actions: \n1:find next shot\n2:report hit\n3:report miss\n4:report sinking\n5:end game");
+		int action = cin.nextInt();
+		boolean end_game = false;
+		if(action == 1) {
+			llist.calculate_shot(carrier_dead, battleship_dead, cruiser_dead, sub_dead, destroyer_dead);
+			llist.find_higest();
+			
+			
+		}
+		else if(action == 2) {
+			System.out.println("give x cordinate");
+			int xpos = cin.nextInt();;
+			System.out.println("give y cordinate");
+			int ypos = cin.nextInt();
+			llist.modify_cell(1, xpos, ypos);
+			
+			
+		}
+		else if(action == 3) {
+			System.out.println("give x cordinate");
+			int xpos = cin.nextInt();
+			System.out.println("give y cordinate");
+			int ypos = cin.nextInt();
+			llist.modify_cell(0, xpos, ypos);
+			
+			
+		}
+		else if(action == 4) {
+			System.out.println("specify which ship has sank:\n1:carrier\n2:battleship\n3:cruiser\n4:sub\n5:destroyer");
+			int sunk_ship = cin.nextInt();
+			if(sunk_ship == 1) {
+				carrier_dead = true;
+			}
+			else if(sunk_ship == 2) {
+				battleship_dead = true;
+			}
+			else if(sunk_ship == 3) {
+				cruiser_dead = true;
+			}
+			else if(sunk_ship == 4) {
+				sub_dead = true;
+			}
+			else if(sunk_ship == 5) {
+				destroyer_dead = true;
+			}
+			System.out.println("give area of sinking in format (x1,y1),(x2,y2)");
+			int xpos1 = cin.nextInt();
+			int ypos1 = cin.nextInt();
+			int xpos2 = cin.nextInt();
+			int ypos2 = cin.nextInt();
+			llist.register_sink(xpos1,ypos1,xpos2,ypos2);
+			
+			
+		}
+		else if(action == 5) {
+			end_game = true;
+			return end_game;
+		}
+		
+		llist.display_grid();
+		llist.clear_chance();
+		return false;
+	}
+	
+	static boolean destroyer_dead = false;
+	static boolean sub_dead = false;
+	static boolean cruiser_dead = false;
+	static boolean battleship_dead = false;
+	static boolean carrier_dead = false;
+	
+	public static void main(String[] args) {
+		
+		build_grid();
+		boolean end_game = false;
+
+    //actions returns false when the end game option is selected, otherwise the program will continue running
+		while(!end_game) {
+			end_game = actions();
+		}
+		
+		
+
+	}
+
+}
