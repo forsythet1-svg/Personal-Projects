@@ -1,0 +1,446 @@
+
+class LinkedList
+{
+    // head of list
+    Node head; 
+ 
+    // Linked list Node
+    class Node
+    {
+    	
+        int data;
+        int posx;
+        int posy;
+        int shot_chance;
+        Node right;
+        Node left;
+        Node up;
+        Node down;
+        boolean hit;
+    	boolean empty;
+    	boolean sunk;
+    	
+        
+        //constructor
+        Node()
+        {
+        	posx = 0;
+        	posy = 0;
+            data = 0;
+            shot_chance = 0;
+            right = null;
+            left = null;
+            up = null;
+            down = null;
+            hit = false;
+            empty = false;
+            sunk = false;
+            
+        }
+    }
+ 
+    public void build_origin() {
+    	Node origin = new Node();
+    	head = origin;
+    }
+    
+    public void build_grid() {
+    	Node prev_node = head;
+    	
+    	for(int i=1; i <= 10; i++) {
+    		//since this node is the square to the right of the previous, its x value has increased by 1
+    		int new_pos = prev_node.posx + 1;
+        	Node new_node = new Node();
+        	prev_node.right = new_node;
+        	new_node.posx = new_pos;
+        	new_node.posy = prev_node.posy;
+        	new_node.left = prev_node;
+        	build_column(prev_node);
+        	prev_node = prev_node.right;
+        	System.out.println("xpos: " + new_node.posx + "   ypos: " + new_node.posy);
+    	}
+    	
+    	
+    	
+    }
+    
+    public void build_column(Node prev_node) {
+    	for(int i = 1; i <= 9; i++) {
+	    	int new_pos = prev_node.posy + 1;
+	    	Node new_node = new Node();
+	    	new_node.posx = prev_node.posx;
+	    	new_node.posy = new_pos;
+	    	prev_node.down = new_node;
+	    	new_node.up = prev_node;
+	    	prev_node = prev_node.down;
+	    	
+	    	//connects the nodes from each column to each other from left and right
+	    	if(new_node.posx > 0) {
+	    		new_node.left = new_node.up.left.down;
+	    		new_node.up.left.down.right = new_node;
+	    	}
+	    	
+	    	System.out.println("xpos: " + new_node.posx + "   ypos: " + new_node.posy);
+    	}
+    	
+    }
+    
+    
+    //**analyze board***
+    public void calculate_shot(boolean carrier, boolean battleship, boolean cruiser, boolean sub, boolean destroyer) {
+    	Node node = head;
+    	Node ref = head;
+    	for(int j = 0; j <=9;j++) {
+    		ref = ref.down;
+    		//runs calculate shot for all nodes in the row
+	    	for(int i = 0; i <= 9; i++) {
+	    		calculate_shot(node, carrier, battleship, cruiser, sub, destroyer);
+	    		node = node.right;
+	    	}
+	    	node = ref;
+    	}
+    }
+    
+    public void calculate_shot(Node node,boolean carrier, boolean battleship, boolean cruiser, boolean sub, boolean destroyer) {
+    	System.out.println("hello");
+    	if(node.empty == true) {
+    		
+    		return;
+    	}
+    	else {
+    		
+    	//checks all possible positions of ships from this node and updates shot chance for each node included        	
+    		if(!carrier) {
+    			System.out.println("checking carrier at node: " +node.posx + " , " + node.posy);
+    			check_viability(node, 5); //carrier
+    		}
+    		if(!destroyer) {
+    			System.out.println("checking battleship at node: " +node.posx + " , " + node.posy);
+    		    check_viability(node, 4); //battleship
+    		}
+    		if(!cruiser) {
+    			System.out.println("checking cruiser at node: " +node.posx + " , " + node.posy);
+    		    check_viability(node, 3); //cruiser
+    		}
+    		if(!sub) {
+    			System.out.println("checking sub at node: " +node.posx + " , " + node.posy);
+    		    check_viability(node, 3); //sub
+    		}
+    		if(!destroyer) {
+    			System.out.println("checking destroyer at node: " +node.posx + " , " + node.posy);
+    		    check_viability(node, 2); //destroyer
+    		}
+	    
+	    
+	    
+	    
+	    	
+    	//finds node with higest shot chance
+    	//find_higest();
+    	}
+    }
+    
+    public void check_viability(Node node, int length) {
+    	//System.out.println("	arrived at viability");
+    	boolean right = check(node,length,1);
+    	boolean down = check(node, length,4);
+    	//System.out.println("	updating chance from origin node: " + node.posx + " , " + node.posy);
+    	if(right) {
+    		//System.out.println("	right viable");
+    		update_chance(node, length, 1);
+    	}
+    	if(down) {
+    		//System.out.println("	down viable");
+    		update_chance(node, length, 4);
+    	}
+    }
+    
+    public boolean check(Node node, int length, int direction) {
+    	boolean failsafe = true;
+    	
+    	//System.out.println("		checking length: " + length + " in direction: " + direction);
+    	if(length > 1) {
+    		
+    		length = length - 1;
+    		//direction == 1 means check right
+	    	if(direction == 1) {
+	    		//checks that current node hasnt been labled a miss
+	    		//since this check happens if length is greater than 1,
+	    		//it also checks if the next space in the given direction exists or not
+	    		
+	    		//System.out.println("		node.empty: " + node.empty + "  node position: " + node.posx + " , " + node.posy);
+	    		if((!node.empty)&&(node.right != null)) {
+	    			
+	    			//recursivly continues checking the other squares in given direction
+	    			
+	    			failsafe = check(node.right,length,direction);
+	    		}
+	    		//if the current square is a miss or the remaining squares needed to 
+	    		//fit the length of the ship in doesnt exist, this is not a valid spot for a ship to be placed.
+	    		else {
+	    			//System.out.println("		false right :-(");
+		    		return false;
+	    		}
+	    	}
+	    
+	    	//direction == 4 means check down
+	    	if(direction == 4) {
+	    		if((!node.empty)&&(node.down != null)) {
+	    			failsafe = check(node.down,length,direction);
+	    		}
+	    		else {
+		    		//System.out.println("		false down :-(");
+		    		return false;
+	    		}
+	    	}
+	    	
+	    	
+    	}
+    	//System.out.println("		length is less than 1");
+    	
+    	if(!failsafe) {
+    		return false;
+    	}
+    	if(node.empty == true) {
+    		return false;
+    	}
+    	return true;
+    }
+    
+    public void update_chance(Node node, int length, int direction) {
+    	
+    	if(length > 1) {
+    		node.shot_chance = node.shot_chance + 1;
+    		if(direction == 1) {
+    			update_chance(node.right,length - 1,direction);
+    		}
+    		else if(direction == 2) {
+    			update_chance(node.left,length - 1,direction);
+    		}
+    		else if(direction == 3) {
+    			update_chance(node.up,length - 1,direction);
+    		}
+    		else if(direction == 4) {
+    			update_chance(node.down,length - 1,direction);
+    		}
+    	}
+    	else {
+    		node.shot_chance = node.shot_chance + 1;
+    	}
+    }
+    
+    
+    //***looks for cell with higest shot_chance***(broken)
+    public void find_higest() {
+    	//find node with best shot chance
+    	Node node = head;
+    	Node best = check_column(node);
+    	//inform user of next shot
+    	System.out.println("best shot: " + best.shot_chance);
+    	System.out.println("target node: " + best.posx + " , " + best.posy);
+    	
+    }
+    
+    private Node check_column(Node node) {
+    	Node row_best_node = check_row(node);
+    	int row_best = row_best_node.shot_chance;
+    	System.out.println("best from row " + node.posy + ": " + row_best);
+    	if(node.down == null) {
+    		
+    		return row_best_node;
+    	}
+    	else {
+    		System.out.println("moving to next row");
+    		Node current_best_node = check_column(node.down);
+    		System.out.println("current best: " + current_best_node.shot_chance);
+    		int current_best = current_best_node.shot_chance;
+    		if(current_best <= row_best) {
+    			return row_best_node;
+    		}
+    		return current_best_node;
+    	}
+    	
+    }
+    
+    private Node check_row(Node node) {
+    	int current_chance = node.shot_chance;
+    	if(node.hit) {
+    		current_chance = 0;
+    	}
+    	
+    	if(node.right == null) {
+    		return node;
+    	}
+    	else {
+    		
+    		Node cbn = check_row(node.right);
+    		int current_best = cbn.shot_chance;
+    		System.out.println("	best: " + current_best + " current: " + current_chance + " comparing: " + node.posx + " , " + node.posy + " and "+ cbn.posx + " , " + cbn.posy);
+    		if(current_best <= current_chance) {
+    			
+    			return node;
+    		}
+    		return cbn;
+    	}
+    	
+    	
+    	
+    }
+    
+    
+    
+    public void modify_cell(int change, int right, int down) {
+    	Node node = head;
+    	
+    	for(int i = 0; i < right;i++) {
+    		node = node.right;
+    	}
+    	for(int j = 0; j < down; j++) {
+    		node = node.down;
+    	}
+    	System.out.println("shot_cords: " + node.posx + " , " + node.posy);
+    	
+    	if(change == 0) {
+    		node.empty = true;
+    	}
+    	else if(change == 1) {
+    		node.hit = true;
+    	}
+    }
+    
+    private Node find_node(int posx, int posy) {
+    	Node node = head;
+    	if((posx >=0) && (posx <=9) && (posy >=0) && (posy <= 9)) {
+    		for(int i = 0; i < posx; i++) {
+    			node = node.right;
+    		}
+    		for(int j = 0; j < posy; j++) {
+    			node = node.down;
+    		}
+    		return node;
+    	}
+    	else {
+    		return head;
+    	}
+    	
+    	
+    	
+    	
+    }
+
+    public void register_sink(int posx, int posy, int posx2, int posy2) {
+    	//user must specify start_point and end_point of sunken ship to find
+    	//the total length and direction of the ship.
+    	Node start_point = find_node(posx,posy);
+    	Node end_point = find_node(posx2,posy2);
+    	
+    	int length;
+    	//if both points have the same y value, the ship is parallel to the x-axis
+    	if(posy == posy2) {
+    		//finds which direction the ship is extending from the start_point.
+    		if(posx > posx2) {
+    			length = posx - posx2;
+    			//mark sunk for length traveling right from end_point
+    			//**if the ship is extending to the left from the start_point, 
+    			//it is also extending from the right from the end_point** 
+    			mark_sunkR(end_point, length);
+    		}
+    		else {
+    			length = posx2 - posx;
+    			// mark sunk for length traveling right from start_point
+    			mark_sunkR(start_point, length);
+    		}
+    	}
+    	//if ship isnt parallel to the x-axis, it must be parallel to the y-axis
+    	else {
+    		if(posy > posy2) {
+    			length = posy - posy2;
+    			// mark sunk for length traveling down from start_point
+    			mark_sunkD(end_point, length);
+    		}
+    		else {
+    			length = posy2 - posy;
+    			// mark sunk for length traveling down from end_point
+    			mark_sunkD(start_point, length);
+    		}
+    	}
+    	
+    	     		
+    	}
+    
+    
+    private void mark_sunkR(Node start_point, int length) {
+    	for(int i = 0; i <= length; i++) {
+    		start_point.sunk = true;
+    		start_point.empty = true;
+    		start_point = start_point.right;
+    	}
+    }
+    
+    private void mark_sunkD(Node start_point, int length) {
+    	for(int i = 0; i <= length; i++) {
+    		start_point.sunk = true;
+    		start_point.empty = true;
+    		start_point = start_point.down;
+    	}
+
+    	
+    }
+
+    
+    public void clear_chance() {
+    	Node node = head;
+    	node.shot_chance = 0;
+    	clear_chance(node.right);
+    	clear_chance(node.down);
+    }
+    
+    private void clear_chance(Node node) {
+    	node.shot_chance = 0;
+    	if(node.right != null) {
+    		clear_chance(node.right);
+    	}
+    	if(node.down != null) {
+    		clear_chance(node.down);
+    	}
+    }
+    
+    
+    //***display grid***
+    public void display_grid() {
+    	Node node = head;
+    	for(int i = 0; i <= 9; i++) {
+    		System.out.print("[ ");
+    		display_row(node);
+    		System.out.println(" ]");
+    		node = node.down;
+    		
+    	}
+    	
+    }
+    
+    public void display_row(Node node) {
+    	for(int i = 0; i <=8; i++) {
+    		if(node.sunk) {
+    			System.out.print("S  ' ");
+    		}
+    		else if (node.empty) {
+    			System.out.print("x  ' ");
+    		}
+    		else if(node.hit) {
+    			System.out.print("H  ' ");
+    		}
+    		else {
+    			if(node.shot_chance >= 10) {
+    				System.out.print(node.shot_chance + " ' ");
+    			}
+    			else {
+    				System.out.print(node.shot_chance + "  ' ");
+    			}
+    		}
+    		node = node.right;
+    	}
+    	System.out.print(node.shot_chance);
+    }
+    
+    
