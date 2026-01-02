@@ -1,2 +1,3 @@
-Im planning on storing each project I add here to its own branch to ensure 
-that if they rely on supporting programs, A visitor wont get confused on which programs are a part of which project 
+creates a basic Fantasy RPG game that has a set of monsters that attack the player who uses turn based attacks to defeat the monster
+
+Planning to upgrade the program with an actual map once I have more free time 
