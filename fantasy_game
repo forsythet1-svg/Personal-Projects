@@ -1,0 +1,245 @@
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.Scanner;
+
+public class fantasy_game {
+	
+	
+	static ArrayList<character> players = new ArrayList<character>();
+	
+	public static void actions(int currentPlayer) {//Displays text for possible moves when its your turn
+		character nextCreature = players.get(currentPlayer);
+		String name = nextCreature.getName();
+		System.out.print(name);
+		System.out.println(", select one of the following options: ");
+		System.out.println("a/A: Attack an opponent");
+		System.out.println("p/P: pass (go to the next player");
+		System.out.println("q/Q: Quit the game");
+		System.out.println("");
+	}
+	
+	public static void characterOptions() {//shows the available races you can choose from
+		System.out.println("enter your species: ");
+		System.out.println("  b/B Balrog");
+		System.out.println("  c/C Cyberdemon");
+		System.out.println("  e/E Elf");
+		System.out.println("  h/H Human");
+		System.out.println("");
+	}
+	
+	public static boolean isRace(String race) {//checks that chosen race is one of the 4 options
+		boolean isRace;
+		if ((race.equals("b")) || (race.equals("B"))) {
+			isRace = true;
+			
+		}
+		else if ((race.equals("c")) || (race.equals("C"))) {
+			isRace = true;
+			
+		}
+		else if ((race.equals("e")) || (race.equals("E"))) {
+			isRace = true;
+			
+		}
+		else if ((race.equals("h")) || (race.equals("H"))) {
+			isRace = true;
+			
+		}
+		else {
+			isRace = false;
+		}
+		return isRace;
+	}
+	
+	static int findCreature(String theName)
+	{
+		 int result = -1;
+		 
+		 for (int i=0; i<players.size(); i++)//cycles nextCreature through every player in the game
+		 {
+			// sets all values of the character to next creature to use the character class commands
+			character nextCreature = players.get(i);
+
+			if (nextCreature.isNamed(theName)) {//checks the nextCreature name for the victim name
+				result = i;
+				//ends loop early once match is found
+				break;
+			}
+		} // end for loop
+		return result;
+	}
+	
+	static void dealDamage(int currentPlayer, int victimLocation) {//takes the attacker and victim and calculates damage dealt
+		character attacker = players.get(currentPlayer);
+		character victim = players.get(victimLocation);
+		int damage = attacker.getDamage();//finds how much damage the attacker does 
+		victim.damage(damage);//deals that damage to the victim;
+		
+		
+	}
+	
+	public static void standings() {//cycles through all players still in the game and shows their current stats(name, race, health, max attack)
+		System.out.println("NAME | SPECIES | HEALTH | ATTACK");
+		for (int i=0; i<players.size(); i++)
+		 {
+			character nextCreature = players.get(i);//finds the next player in the list 
+			
+			//Retrieves relevant data from creature object
+			String name = nextCreature.getName();
+			String species = nextCreature.getSpecies();
+			int health = nextCreature.getHealth();
+			int attack = nextCreature.getAttack();
+			
+			System.out.println(name + " | " + species + " | " + health + " | " + attack);//displays player stats
+		 }
+		 System.out.println("");	
+	}
+	
+	public static void showBaseStats() {//used to show each species starting stats
+		System.out.println("SPECIES | HEALTH | ATTACK POWER");
+		System.out.println(" Balrog | 82 | 15");
+		System.out.println("Cyberdemon | 61 | 13");
+		System.out.println("Elf| 42 | 11");
+		System.out.println("Human| 109 | 11");
+	}
+	
+	public static void main(String[] args) {
+		
+		
+		
+		
+		Scanner in = new Scanner(System.in);//used to add to text docs
+		Random rng = new Random();
+		
+		
+		//extra variables needed for program
+		//left up here to keep code clean
+		boolean adding_players = true;
+		
+		String name;
+		String race;
+		
+		
+		//asks user if they want to see the base stats of the available characters. checks for answer
+		System.out.println("before we begin, would you like to see the stats of the availible character types? (y/n)");
+		String showTutorial = in.next();
+		if (showTutorial.equals("y") || showTutorial.equals("Y")) {
+			showBaseStats();
+		}
+		
+		
+		while (adding_players){//loop continues until user types quit when they are done adding players
+			
+			
+			System.out.println("enter name or quit to continue");
+			name = in.next();//sets user input to name in preparation for adding it to character object
+			
+			
+			if(name.equals("quit")) {//checks to make sure it isn't the quit command to break out of loop
+				adding_players = false;
+			}
+			else {
+				characterOptions();//asks user for what species they want to be
+				
+				race = in.next();//stores user choice
+				
+				if (!isRace(race)) {//checks that the users choice is not one of the 4 availible races.
+					System.err.println("sorry that is not one of the species options. please restart your character selection\n");
+					continue;//skips to begining of loop before any on the incorrect information is added allowing user to retry
+				}
+				
+				//if species is one of the available species, name and species are added to object and added to ArrayList
+				character nextPlayer = new character(name, race);
+				players.add(nextPlayer);
+				
+			}
+			
+			
+			
+		}//end of adding player loop
+		
+		
+		System.out.println("Let the game begin!\nHere are our current standings: \n");
+		standings();//shows all players stats
+		
+		//required variables
+		//left up here to keep code clean
+		int currentPlayer = 0;
+		int victimLocation;
+		String option;
+		String victim;
+		
+		
+		while (players.size() > 1) {//will loop until only one player is remaining, is used to determine when game is over
+			
+			if (currentPlayer >= players.size()) {//resets "currentPLayer" so that it can continue to loop through the available players
+				currentPlayer = 0;
+			}
+			
+			//shows the actions a player can use for their turn and records user response
+			actions(currentPlayer);
+			option = in.next();
+			
+			//logic to determine player choice
+			if ((option.equals("a")) || (option.equals("A"))){
+				
+				//player chooses which other player to attack
+				System.out.println("who do you want to attack?");
+				victim = in.next();
+				
+				if (findCreature(victim) == -1) {//triggers if player name entered incorrectly, user is allowed to try again from begining of their turn
+					System.err.println("sorry that player dosnt exist please try again");
+					continue;
+				}
+				else {//if victim exists sets victimLocation to the arraylocation of the victim
+					victimLocation = findCreature(victim);
+					System.out.println("currentPlayer: " + currentPlayer);
+					System.out.println("victimLocation: " + victimLocation);
+					dealDamage(currentPlayer, victimLocation);//calculates and deals damage for turn
+				}
+				
+			}
+			else if ((option.equals("p")) || (option.equals("P"))){//causes nothing to happen allowing code to skip to next player
+				
+			}
+			else if ((option.equals("q")) || (option.equals("Q"))){//removes current player from game and ArrayList to prevent errors
+				players.remove(currentPlayer);
+			}
+			
+			else {//triggers if user dosnt choose an availible option
+				System.err.print("that wasnt one of the choices");
+				//skips back to beggiing of their turn
+				continue;
+			}
+			
+			for (int i=0; i<players.size(); i++)//checks to see if any characters died this turn
+			 {
+				character nextCreature = players.get(i);
+				boolean dead = nextCreature.isDead();
+				
+				if (dead) {//removes dead player from ArrayList
+					players.remove(i);
+				}
+				else {
+					
+				}
+			 }	
+				
+			
+			standings();//shows standings after each turn
+			currentPlayer++;//increases currentPlayer so that the character in the next arrayLocation becomes the character stats are based of of
+			
+		}//end of game loop
+		
+		
+		character winner = players.get(0);//since players are removed from array when they die the last player standing will always be at location 0
+		
+		//prints victory message
+		String winnerName = winner.getName();
+		System.out.print(winnerName + " wins!\ncongradulations!");
+		
+		
+		
+		
+	}
+}
