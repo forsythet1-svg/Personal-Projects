@@ -106,7 +106,7 @@ public class character {
 				damage = damage + 50;
 				System.out.println("special attack! +50 damage");
 			}
-			if (ultAttack <= 5) {
+			if (balrogUlt2 <= 5) {
 				damage = damage + 50;
 				System.out.println("special attack! +50 damage");
 			}
